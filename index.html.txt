@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Team Divider</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { width: 500px; margin: auto; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; }
+        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        h2 { text-align: center; }
+        .team { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Football Team Divider</h2>
+        <input type="text" id="playerName" placeholder="Player Name">
+        <input type="number" id="passing" placeholder="Passing (1-10)" min="1" max="10">
+        <input type="number" id="stamina" placeholder="Stamina (1-10)" min="1" max="10">
+        <input type="number" id="shooting" placeholder="Shooting (1-10)" min="1" max="10">
+        <input type="number" id="speed" placeholder="Speed (1-10)" min="1" max="10">
+        <select id="position">
+            <option value="attack">Attack</option>
+            <option value="mid">Midfield</option>
+            <option value="defence">Defence</option>
+        </select>
+        <button onclick="addPlayer()">Add Player</button>
+
+        <div>
+            <label for="numTeams">Number of Teams:</label>
+            <select id="numTeams">
+                <option value="2">2 Teams</option>
+                <option value="4">4 Teams</option>
+            </select>
+        </div>
+
+        <button onclick="generateTeams()">Generate Teams</button>
+
+        <div id="teamsDisplay"></div>
+    </div>
+
+    <script>
+        let players = JSON.parse(localStorage.getItem('players')) || [];
+
+        function addPlayer() {
+            const name = document.getElementById('playerName').value;
+            const passing = parseInt(document.getElementById('passing').value);
+            const stamina = parseInt(document.getElementById('stamina').value);
+            const shooting = parseInt(document.getElementById('shooting').value);
+            const speed = parseInt(document.getElementById('speed').value);
+            const position = document.getElementById('position').value;
+
+            if (!name || isNaN(passing) || isNaN(stamina) || isNaN(shooting) || isNaN(speed)) {
+                alert("Please fill in all fields correctly.");
+                return;
+            }
+
+            const player = {
+                name, passing, stamina, shooting, speed, position,
+                totalSkill: passing + stamina + shooting + speed
+            };
+
+            players.push(player);
+            localStorage.setItem('players', JSON.stringify(players));
+
+            // Clear inputs
+            document.getElementById('playerName').value = '';
+            document.getElementById('passing').value = '';
+            document.getElementById('stamina').value = '';
+            document.getElementById('shooting').value = '';
+            document.getElementById('speed').value = '';
+        }
+
+        function generateTeams() {
+            const numTeams = parseInt(document.getElementById('numTeams').value);
+            const playersPerTeam = Math.floor(players.length / numTeams);
+            let teams = Array.from({ length: numTeams }, () => []);
+            let sortedPlayers = players.sort((a, b) => b.totalSkill - a.totalSkill);
+
+            for (let i = 0; i < players.length; i++) {
+                teams[i % numTeams].push(sortedPlayers[i]);
+            }
+
+            displayTeams(teams);
+        }
+
+        function displayTeams(teams) {
+            let output = '';
+            teams.forEach((team, index) => {
+                output += `<h3>Team ${index + 1}</h3>`;
+                output += '<ul>';
+                let totalSkill = 0;
+                team.forEach(player => {
+                    output += `<li>${player.name} - ${player.position} - Total Skill: ${player.totalSkill}</li>`;
+                    totalSkill += player.totalSkill;
+                });
+                output += `</ul><strong>Total Team Skill: ${totalSkill}</strong><hr>`;
+            });
+            document.getElementById('teamsDisplay').innerHTML = output;
+        }
+    </script>
+
+</body>
+</html>
